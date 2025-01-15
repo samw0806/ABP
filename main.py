@@ -78,6 +78,12 @@ def main(args):
         "val_loss": all_val_loss,
         'val_BS': all_val_BS,
     })
+    # 计算 all_val_cindex 的均值
+    mean_val_cindex = sum(all_val_cindex) / len(all_val_cindex)
+
+    # 添加一行，仅包含 all_val_cindex 的均值，其他列填充为 NaN
+    final_df.loc[len(final_df)] = [None] * len(final_df.columns)
+    final_df.loc[len(final_df) - 1, 'val_cindex'] = mean_val_cindex
 
     if len(folds) != args.k:
         save_name = 'summary_partial_{}_{}.csv'.format(args.k_start, args.k_end)

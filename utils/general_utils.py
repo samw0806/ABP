@@ -139,7 +139,9 @@ def _get_custom_exp_code(args):
     # param_code += '_a%s' % str(args.alpha_surv)
     
     #----> Learning Rate
-    # param_code += '_lr%s' % format(args.lr, '.0e')
+    param_code += '_lr%s' % format(args.lr, '.0e')
+    param_code += '_opt%s' % str(args.opt)
+    param_code += '_nlatents%s' % str(args.num_latents)
 
     #----> Regularization
     if args.reg_type == 'L1':
@@ -153,17 +155,18 @@ def _get_custom_exp_code(args):
     #----> Batch Size
     param_code += '_b%s' % str(args.batch_size)
 
-    # label col 
-    param_code += "_" + args.label_col
+    # # label col 
+    # param_code += "_" + args.label_col
 
-    param_code += "_wsiDim_" + str(args.wsi_projection_dim)
+    # param_code += "_wsiDim_" + str(args.wsi_projection_dim)
     param_code += "_epochs_" + str(args.max_epochs)
-    param_code += "_omics_" + str(args.omics_format)
-    param_code += "_pathT_" + str(args.type_of_path)
-    # param_code += "_sp_" + str(args.specific_simple)
-    param_code += "_s" + str(args.seed)
+    param_code += "_epochs_" + str(args.max_epochs)
+    # param_code += "_omics_" + str(args.omics_format)
+    # param_code += "_pathT_" + str(args.type_of_path)
+    # # param_code += "_sp_" + str(args.specific_simple)
+    # param_code += "_s" + str(args.seed)
 
-    #----> Updating
+    # #----> Updating
     args.param_code = param_code
     args.dataset_path = dataset_path
 

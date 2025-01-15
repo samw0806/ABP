@@ -9,24 +9,44 @@
 
 import torch
 import torch.nn as nn
-
+import ipdb
 
 '''MI Estimator network is seperated from the main network'''
 class MIEstimator(nn.Module):
-    def __init__(self, dim = 128):
+    def __init__(self, dim = 128,dim2 = None):
         super(MIEstimator, self).__init__()
         self.dim = dim
-        self.mimin_glob = CLUBMean(self.dim*2, self.dim) # Can also use CLUBEstimator, but CLUBMean is more stable
-        self.mimin = CLUBMean(self.dim, self.dim)
+        if dim2 == None:
+            self.mimin_glob = CLUBMean(self.dim*2, self.dim) # Can also use CLUBEstimator, but CLUBMean is more stable
+            self.mimin = CLUBMean(self.dim, self.dim)
+        else:
+            self.mimin = CLUBMean(self.dim, dim2)
 
     def forward(self, histology, pathways,global_embed):
         mimin = self.mimin(histology, pathways)
         mimin += self.mimin_glob(torch.cat((histology, pathways), dim=1), global_embed)
         return mimin
+    
+    def forward_(self, histology, pathways):
+        mimin = self.mimin(histology, pathways)
+        return mimin
+    
+    def forward_glob(self, histology, pathways,global_embed):
+        mimin = self.mimin_glob(torch.cat((histology, pathways), dim=1), global_embed)
+        return mimin
 
     def learning_loss(self, histology, pathways,global_embed):
         mimin_loss = self.mimin.learning_loss(histology, pathways)
         mimin_loss += self.mimin_glob.learning_loss(torch.cat((histology, pathways), dim=1), global_embed).mean()
+
+        return mimin_loss
+    
+    def learning_loss_glob(self, histology, pathways,global_embed):
+        mimin_loss = self.mimin_glob.learning_loss(torch.cat((histology, pathways), dim=1), global_embed).mean()
+
+        return mimin_loss
+    def learning_loss_(self, histology, pathways):
+        mimin_loss = self.mimin.learning_loss(histology, pathways)
 
         return mimin_loss
 
@@ -104,7 +124,6 @@ class CLUBMean(nn.Module):  # Set variance of q(y|x) to 1, logvar = 0. Update 11
         return mu, 0
 
     def forward(self, x_samples, y_samples):
-
         mu, logvar = self.get_mu_logvar(x_samples)
 
         # log of conditional probability of positive sample pairs

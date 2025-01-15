@@ -7,7 +7,7 @@ from models.model_ABP import ABP
 from sksurv.metrics import concordance_index_censored, concordance_index_ipcw, brier_score, integrated_brier_score, cumulative_dynamic_auc
 from sksurv.util import Surv
 from utils.file_utils import _save_pkl
-
+import ipdb
 #----> pytorch imports
 import torch
 
@@ -119,13 +119,12 @@ def _init_model(args):
             omics_input_dim = 14933
     else:
         omics_input_dim = 0
-
     if args.method == "PIBD":
         model_dict = {'args': args,
                       'omics_input_dim': omics_input_dim,}
         model = PIBD(**model_dict)
 
-    if args.method == "ABP":
+    elif args.method == "ABP":
         model_dict = {'args': args,
                       'omics_input_dim': omics_input_dim,}
         model = ABP(**model_dict)       
@@ -387,30 +386,30 @@ def _train_loop_survival(args, epoch, model, omics_format, loader, optimizer, lo
     for batch_idx, data in enumerate(loader):
 
         h, y_disc, event_time, censor, clinical_data_list = _process_data_and_forward(model, omics_format, device, data)
-        if args.method == "ABP":
-            logits = h
+        # if args.method == "ABP":
+        #     logits = h
 
-            loss_surv = loss_fn(h=logits, y=y_disc, t=event_time, c=censor)
+        #     loss_surv = loss_fn(h=logits, y=y_disc, t=event_time, c=censor)
 
-            loss = loss_surv
-            # print("loss_surv:{},proxy_loss:{},IB_loss_proxy:{}".format(loss_surv.item(),proxy_loss.item(),IB_loss_proxy.item()))
-            h = logits
+        #     loss = loss_surv
+        #     # print("loss_surv:{},proxy_loss:{},IB_loss_proxy:{}".format(loss_surv.item(),proxy_loss.item(),IB_loss_proxy.item()))
+        #     h = logits
 
-            loss_value = loss.item()
-            loss = loss / y_disc.shape[0]
+        #     loss_value = loss.item()
+        #     loss = loss / y_disc.shape[0]
             
-            risk, _ = _calculate_risk(h)
+        #     risk, _ = _calculate_risk(h)
 
-            all_risk_scores, all_censorships, all_event_times, all_clinical_data = _update_arrays(all_risk_scores, all_censorships, all_event_times,all_clinical_data, event_time, censor, risk, clinical_data_list)
+        #     all_risk_scores, all_censorships, all_event_times, all_clinical_data = _update_arrays(all_risk_scores, all_censorships, all_event_times,all_clinical_data, event_time, censor, risk, clinical_data_list)
 
-            total_loss += loss_value
+        #     total_loss += loss_value
 
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #     optimizer.zero_grad()
 
 
-        if args.method == "PIBD":
+        if args.method == "PIBD" or "ABP":
             logits, IB_loss_proxy, proxy_loss, mimin_total, mimin_loss_total = h[0], h[1], h[2], h[3], h[4]
 
             loss_surv = loss_fn(h=logits, y=y_disc, t=event_time, c=censor)
@@ -583,7 +582,7 @@ def _summary(dataset_factory, model, omics_format, loader, loss_fn, survival_tra
             else:
                 raise NotImplementedError
 
-            h= model(**input_args)
+            h, _, _, _, _= model(**input_args)
 
 
             # loss_value = 0.0

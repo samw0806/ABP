@@ -14,6 +14,10 @@ def _process_args():
 
     parser = argparse.ArgumentParser(description='Configurations for SurvPath Survival Prediction Training')
 
+    #---> mine
+    parser.add_argument('--num_latents', type=int, default=8)
+    parser.add_argument('--net', action='store_true', default=False)
+
     #---> study related
     parser.add_argument('--study', type=str, default='tcga_stad',help='study name')
     parser.add_argument('--task', type=str, choices=['survival'],default='survival', help='task name')
